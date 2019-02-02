@@ -1,0 +1,61 @@
+articles_df = pd.read_csv('./input/articles sharing/shared_articles.csv')
+articles_count=len(articles_df)
+articles_count
+
+sorted_articles=articles_df.sort_values(by='timestamp')
+sorted_articles.head(2)
+
+interactions_df = pd.read_csv('./input/articles sharing/users_interactions.csv')
+interactions_count=len(interactions_df)
+interactions_count
+
+sorted_interactions=interactions_df.sort_values(by='timestamp')
+sorted_interactions.head(2)
+
+#Calculate 80% of interactions_count for training set
+train_set_count= int(.8*interactions_count)
+train_set_count
+
+interactions_train_df= sorted_interactions.iloc[:train_set_count,:]
+interactions_test_df= sorted_interactions.iloc[train_set_count:,:]
+interactions_train_df=interactions_train_df.reset_index(drop=True)
+interactions_train_df.head(2)
+
+#reference date is last date in training set
+timestamp=interactions_train_df.iloc[train_set_count-1]['timestamp']
+timestamp
+
+#take articles till that date
+articles_tilldate=sorted_articles[sorted_articles['timestamp']<timestamp]
+articles_tilldate.shape
+
+#Now we need to filter articles which were available(not removed) till that date
+articles_tilldate=articles_tilldate.sort_values(by='timestamp',ascending=False)
+
+list_of_articles=articles_tilldate['contentId'].tolist()
+len(list_of_articles)
+
+unique_articles=articles_tilldate['contentId'].unique().tolist()
+len(unique_articles)
+
+articles_tilldate.reset_index(drop=True, inplace=True)
+articles_tilldate.head(2)
+
+#articles which were not removed till that date
+available_articles=[]
+i=0
+
+#checking latest entry of a content id
+for item in unique_articles:
+    for i in range(0,len(articles_tilldate)):        
+        if item == articles_tilldate.iloc[i]['contentId']:
+            print(item)
+            if articles_tilldate.iloc[i]['eventType'] == 'CONTENT SHARED':
+                available_articles.append(articles_tilldate.iloc[i])
+                print(available_articles)
+                break
+            else:
+                print(item, 'has been removed') 
+                break
+    
+                     
